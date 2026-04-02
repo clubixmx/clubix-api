@@ -1,5 +1,6 @@
 package com.clubix.api.command;
 
+import com.clubix.api.command.formatter.ResponseFormatter;
 import com.clubix.usecase.model.response.QueryBalanceResponse;
 import com.jmeta.incoming.message.IncomingTextMessage;
 import com.jmeta.incoming.message.Message;
@@ -31,18 +32,20 @@ public class QueryBalanceCommandTest {
                 "saldo 5511566012"
         );
 
-        UseCase useCase = mock(UseCase.class);
-        when(useCase.execute(any())).thenReturn(
-                Mono.just(QueryBalanceResponse.builder()
-                        .status("SUCCESS")
-                        .balance(100.00)
-                        .build())
-        );
+        var response = QueryBalanceResponse.builder().status("SUCCESS").balance(100.00).build();
 
-        Command command = new QueryBalanceCommand(useCase, requestFactory);
+        UseCase useCase = mock(UseCase.class);
+        when(useCase.execute(any())).thenReturn(Mono.just(response));
+
+        ResponseFormatter<QueryBalanceResponse> formatter = mock(ResponseFormatter.class);
+        when(formatter.format(response)).thenReturn("Saldo: $100.00");
+
+        Command command = new QueryBalanceCommand(useCase, requestFactory, formatter);
 
         StepVerifier.create(command.process(message))
                 .expectNext("Saldo: $100.00")
                 .verifyComplete();
     }
 }
+
+

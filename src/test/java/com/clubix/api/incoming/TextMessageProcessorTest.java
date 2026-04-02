@@ -16,6 +16,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 
+import java.util.Map;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -34,7 +36,7 @@ class TextMessageProcessorTest {
 
     @BeforeEach
     void setUp() {
-        processor = new TextMessageProcessor(messageSender, markAsReadSender, typingIndicatorSender);
+        processor = new TextMessageProcessor(messageSender, markAsReadSender, typingIndicatorSender, Map.of());
     }
 
     @Test

@@ -1,5 +1,6 @@
 package com.clubix.api.command;
 
+import com.clubix.api.command.formatter.ResponseFormatter;
 import com.clubix.usecase.model.response.QueryBalanceResponse;
 import com.jmeta.incoming.message.IncomingTextMessage;
 import com.usecase.UseCase;
@@ -17,11 +18,14 @@ public class QueryBalanceCommand implements Command {
 
     private final UseCase queryBalanceUseCase;
     private final RequestFactory requestFactory;
+    private final ResponseFormatter<QueryBalanceResponse> formatter;
 
     public QueryBalanceCommand(@Qualifier("queryBalanceUseCase") UseCase queryBalanceUseCase,
-                               RequestFactory requestFactory) {
+                               RequestFactory requestFactory,
+                               ResponseFormatter<QueryBalanceResponse> formatter) {
         this.queryBalanceUseCase = queryBalanceUseCase;
         this.requestFactory = requestFactory;
+        this.formatter = formatter;
     }
 
     @Override
@@ -32,6 +36,6 @@ public class QueryBalanceCommand implements Command {
 
         return queryBalanceUseCase.execute(request)
                 .cast(QueryBalanceResponse.class)
-                .map(response -> String.format("Saldo: $%.2f", response.balance));
+                .map(formatter::format);
     }
 }

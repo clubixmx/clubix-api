@@ -12,6 +12,7 @@ import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.awaitility.Awaitility;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -22,6 +23,7 @@ import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -29,7 +31,7 @@ import static org.mockito.Mockito.*;
 
 public class BusinessSteps {
 
-    private static final Double EXPECTED_BALANCE = 130.0;
+    private double scenarioBalance;
 
     @Autowired private R2dbcEntityTemplate          r2dbcTemplate;
     @Autowired private CustomerEntityRepository     entityRepository;
@@ -51,12 +53,13 @@ public class BusinessSteps {
 
     // ── Givens ─────────────────────────────────────────────────────────────────
 
-    @Given("a customer with ID {string} exists")
-    public void a_customer_with_id_exists(String customerId) {
+    @Given("a customer with ID {string} exists with balance {double}")
+    public void a_customer_with_id_exists(String customerId, double balance) {
+        this.scenarioBalance = balance;
         r2dbcTemplate.insert(
                 CustomerEntity.builder()
                         .id(customerId)
-                        .balance(EXPECTED_BALANCE)
+                        .balance(balance)
                         .build()
         ).block();
     }
@@ -90,32 +93,30 @@ public class BusinessSteps {
 
     // ── Thens ──────────────────────────────────────────────────────────────────
 
-    @Then("the response should contain the balance information for customer ID {string}")
-    public void the_response_should_contain_the_balance_information_for_customer_id(String customerId) {
-        ArgumentCaptor<WhatsappMessage> captor = ArgumentCaptor.forClass(WhatsappMessage.class);
-        verify(messageSender).send(captor.capture());
-
-        String body = captor.getValue().text().body();
-        assertThat(body)
-                .contains(customerId)
-                .contains(String.valueOf(EXPECTED_BALANCE));
+    @Then("the response should be {string}")
+    public void the_response_should_be(String expectedResponse) {
+        Awaitility.await().atMost(Duration.ofSeconds(3)).untilAsserted(() -> {
+            ArgumentCaptor<WhatsappMessage> captor = ArgumentCaptor.forClass(WhatsappMessage.class);
+            verify(messageSender).send(captor.capture());
+            assertThat(captor.getValue().text().body()).isEqualTo(expectedResponse);
+        });
     }
 
     @Then("the response should signal a not found error for customer ID {string}")
     public void the_response_should_signal_a_not_found_error(String customerId) {
-        ArgumentCaptor<WhatsappMessage> captor = ArgumentCaptor.forClass(WhatsappMessage.class);
-        verify(messageSender).send(captor.capture());
-
-        assertThat(captor.getValue().text().body())
-                .containsIgnoringCase("not found");
+        Awaitility.await().atMost(Duration.ofSeconds(3)).untilAsserted(() -> {
+            ArgumentCaptor<WhatsappMessage> captor = ArgumentCaptor.forClass(WhatsappMessage.class);
+            verify(messageSender).send(captor.capture());
+            assertThat(captor.getValue().text().body()).containsIgnoringCase("not found");
+        });
     }
 
     @Then("the response should signal a service unavailable error")
     public void the_response_should_signal_a_service_unavailable_error() {
-        ArgumentCaptor<WhatsappMessage> captor = ArgumentCaptor.forClass(WhatsappMessage.class);
-        verify(messageSender).send(captor.capture());
-
-        assertThat(captor.getValue().text().body())
-                .containsIgnoringCase("unavailable");
+        Awaitility.await().atMost(Duration.ofSeconds(3)).untilAsserted(() -> {
+            ArgumentCaptor<WhatsappMessage> captor = ArgumentCaptor.forClass(WhatsappMessage.class);
+            verify(messageSender).send(captor.capture());
+            assertThat(captor.getValue().text().body()).containsIgnoringCase("unavailable");
+        });
     }
 }
