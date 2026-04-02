@@ -14,7 +14,34 @@ spring:
     url: r2dbc:h2:mem:///clubixdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: sa
     password:
-  sql:
-    init:
-      mode: always
-      schema-locations: classpath:schema.sql
+  flyway:
+    url: jdbc:h2:mem:clubixdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    user: sa
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/clubixdb
+    username: clubix
+    password: clubix
+  flyway:
+    url: jdbc:postgresql://localhost:5432/clubixdb
+    user: clubix
+    password: clubix
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  r2dbc:
+    url: ${DB_R2DBC_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  flyway:
+    url: ${DB_JDBC_URL}
+    user: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
