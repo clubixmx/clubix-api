@@ -1,6 +1,6 @@
 package com.clubix.api.incoming;
 
-import com.clubix.repository.CustomerRepository;
+import com.clubix.repository.CustomerPostgreSQLRepository;
 import com.jmeta.outgoing.MarkAsReadSender;
 import com.jmeta.outgoing.MessageSender;
 import com.jmeta.outgoing.TypingIndicatorSender;
@@ -34,7 +34,7 @@ class TextMessageProcessorIntegrationTest {
     @MockitoBean private MessageSender          messageSender;
     @MockitoBean private MarkAsReadSender       markAsReadSender;
     @MockitoBean private TypingIndicatorSender  typingIndicatorSender;
-    @MockitoBean private CustomerRepository     customerRepository; // requerido por UseCaseConfig
+    @MockitoBean private CustomerPostgreSQLRepository customerRepository; // requerido por UseCaseConfig
 
     @Autowired
     private WebTestClient webTestClient;

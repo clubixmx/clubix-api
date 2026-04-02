@@ -28,16 +28,21 @@ public class TextMessageProcessor implements MessageProcessor {
 
         markAsReadSender.markAsRead(messageId)
                 .then(Mono.defer(() -> typingIndicatorSender.send(messageId)))
-                .then(Mono.defer(() -> messageSender.send(WhatsappMessage.builder()
+                .then(Mono.defer(() -> processTextMessage(incomingTextMessage)))
+                .flatMap(responseText -> messageSender.send(WhatsappMessage.builder()
                         .to(incomingMessage.profile().waId())
                         .type("text")
                         .text(TextContent.builder()
-                                .body(String.format("Echo: %s", incomingTextMessage.text()))
+                                .body(responseText)
                                 .build())
-                        .build())))
+                        .build()))
                 .subscribe(
                         null,
                         error -> log.error("Error processing message {}: {}", messageId, error.getMessage())
                 );
+    }
+
+    private Mono<String> processTextMessage(IncomingTextMessage message) {
+        return Mono.just(String.format("Echo: %s", message.text()));
     }
 }

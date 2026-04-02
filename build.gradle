@@ -22,6 +22,7 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+	implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
 
     implementation 'com.clubix:clubix-core:0.1.0-SNAPSHOT'
     implementation 'com.clubix:clubix-repo-postgresql:0.1.0-SNAPSHOT'
@@ -38,11 +39,7 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testImplementation 'org.junit.platform:junit-platform-suite'
 
-    // clean-usecase: transitiva de clubix-core pero en scope 'implementation',
-    // no expuesta al compile classpath de consumers → hay que declararla explícita
-    testImplementation 'com.usecase:clean-usecase:0.1.0-SNAPSHOT'
-
-    // Cucumber
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation platform('io.cucumber:cucumber-bom:7.21.1')
     testImplementation 'io.cucumber:cucumber-java'
     testImplementation 'io.cucumber:cucumber-junit-platform-engine'

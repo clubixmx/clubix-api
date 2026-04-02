@@ -5,8 +5,8 @@
         "messages": [{
           "type": "text",
           "from": "5491112345678",
-          "id": "wamid-hello-001",
-          "text": { "body": "Hello, World!" }
+          "id": "wamid-query-001",
+          "text": { "body": "saldo {customerId}" }
         }],
         "contacts": [{
           "profile": { "name": "Test User" },
