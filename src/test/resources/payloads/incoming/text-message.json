@@ -1,0 +1,19 @@
+{
+  "entry": [{
+    "changes": [{
+      "value": {
+        "messages": [{
+          "type": "text",
+          "from": "5491112345678",
+          "id": "wamid-abc-123",
+          "text": { "body": "Hola!" }
+        }],
+        "contacts": [{
+          "profile": { "name": "John" },
+          "wa_id": "5491112345678"
+        }]
+      }
+    }]
+  }]
+}
+

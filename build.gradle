@@ -36,6 +36,17 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'io.projectreactor:reactor-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testImplementation 'org.junit.platform:junit-platform-suite'
+
+    // clean-usecase: transitiva de clubix-core pero en scope 'implementation',
+    // no expuesta al compile classpath de consumers → hay que declararla explícita
+    testImplementation 'com.usecase:clean-usecase:0.1.0-SNAPSHOT'
+
+    // Cucumber
+    testImplementation platform('io.cucumber:cucumber-bom:7.21.1')
+    testImplementation 'io.cucumber:cucumber-java'
+    testImplementation 'io.cucumber:cucumber-junit-platform-engine'
+    testImplementation 'io.cucumber:cucumber-spring'
 
     // H2 in-memory R2DBC (local profile)
     implementation 'io.r2dbc:r2dbc-h2:1.0.0.RELEASE'

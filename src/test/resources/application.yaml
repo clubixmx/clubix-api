@@ -1,6 +1,18 @@
 spring:
   application:
     name: clubix-api
+  r2dbc:
+    url: r2dbc:h2:mem:///testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
 
-server:
-  port: 8080
+whatsapp:
+  hook:
+    verify-token: test-token
+  outgoing:
+    meta-url: http://localhost:9999
+    token: test-token
