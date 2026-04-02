@@ -2,8 +2,10 @@ package com.clubix.api;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
+@ComponentScan(basePackages = {"com.clubix.api", "com.jmeta"})
 public class Application {
 
 	public static void main(String[] args) {

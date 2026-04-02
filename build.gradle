@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.5.5'
 	id 'io.spring.dependency-management' version '1.1.7'
+    id 'maven-publish'
 }
 
 group = 'com.clubix.api'
@@ -10,19 +11,35 @@ description = 'Demo project for Spring Boot'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(24)
+		languageVersion = JavaLanguageVersion.of(21)
 	}
 }
 
 repositories {
 	mavenCentral()
+    mavenLocal()
 }
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+    implementation 'com.clubix:clubix-core:0.1.0-SNAPSHOT'
+    implementation 'com.clubix:clubix-repo-postgresql:0.1.0-SNAPSHOT'
+    implementation 'com.jmeta:whatsapp-sdk:0.1.0-SNAPSHOT'
+
+    // Lombok (forced 1.18.44+ for Java 24 compatibility)
+    compileOnly 'org.projectlombok:lombok:1.18.44'
+    annotationProcessor 'org.projectlombok:lombok:1.18.44'
+    testCompileOnly 'org.projectlombok:lombok:1.18.44'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.44'
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'io.projectreactor:reactor-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // H2 in-memory R2DBC (local profile)
+    implementation 'io.r2dbc:r2dbc-h2:1.0.0.RELEASE'
+    implementation 'com.h2database:h2:2.3.232'
 }
 
 tasks.named('test') {

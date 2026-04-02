@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS customer (
+    id      VARCHAR(255) PRIMARY KEY,
+    balance DOUBLE PRECISION
+);
+
