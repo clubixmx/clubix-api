@@ -4,6 +4,7 @@ import com.clubix.api.command.formatter.ResponseFormatter;
 import com.clubix.usecase.model.response.QueryBalanceResponse;
 import com.usecase.UseCase;
 import com.usecase.model.request.RequestFactory;
+import com.usecase.shared.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
@@ -37,6 +38,16 @@ public class AccountTools {
 
         return queryBalanceUseCase.execute(request)
                 .cast(QueryBalanceResponse.class)
-                .map(formatter::format);
+                .map(formatter::format)
+                .onErrorResume(ValidationException.class, e -> {
+                    log.warn("Balance query validation error for {}: {}", customerId, e.getMessage());
+                    return Mono.just(formatter.format(
+                            QueryBalanceResponse.builder().error(e.getMessage()).build()));
+                })
+                .onErrorResume(e -> {
+                    log.error("Unexpected error querying balance for {}", customerId, e);
+                    return Mono.just(formatter.format(
+                            QueryBalanceResponse.builder().error("No se pudo consultar el saldo. Intente más tarde.").build()));
+                });
     }
 }

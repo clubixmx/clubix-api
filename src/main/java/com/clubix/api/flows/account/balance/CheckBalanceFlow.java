@@ -1,18 +1,13 @@
 package com.clubix.api.flows.account.balance;
 
-import com.clubix.api.command.formatter.ResponseFormatter;
 import com.clubix.api.flows.account.balance.store.CheckBalanceStateStore;
 import com.clubix.api.flows.core.ReactiveConfirmableFlow;
-import com.clubix.usecase.model.response.QueryBalanceResponse;
-import com.usecase.UseCase;
-import com.usecase.model.request.RequestFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
+import com.clubix.api.tools.AccountTools;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.util.Locale;
-import java.util.Map;
 
 @Order(10)
 @Service
@@ -20,20 +15,14 @@ public class CheckBalanceFlow extends ReactiveConfirmableFlow<CheckBalanceState>
 
     private final CheckBalanceStateStore store;
     private final CheckBalanceParser parser;
-    private final UseCase queryBalanceUseCase;
-    private final RequestFactory requestFactory;
-    private final ResponseFormatter<QueryBalanceResponse> formatter;
+    private final AccountTools accountTools;
 
     public CheckBalanceFlow(CheckBalanceStateStore store,
                             CheckBalanceParser parser,
-                            @Qualifier("queryBalanceUseCase") UseCase queryBalanceUseCase,
-                            RequestFactory requestFactory,
-                            ResponseFormatter<QueryBalanceResponse> formatter) {
+                            AccountTools accountTools) {
         this.store = store;
         this.parser = parser;
-        this.queryBalanceUseCase = queryBalanceUseCase;
-        this.requestFactory = requestFactory;
-        this.formatter = formatter;
+        this.accountTools = accountTools;
     }
 
     @Override public String name() { return "CONSULTAR_SALDO"; }
@@ -108,10 +97,6 @@ public class CheckBalanceFlow extends ReactiveConfirmableFlow<CheckBalanceState>
 
     @Override
     protected Mono<String> execute(CheckBalanceState s) {
-        var request = requestFactory.get("QueryBalanceRequest", Map.of("customerId", s.target()));
-
-        return queryBalanceUseCase.execute(request)
-                .cast(QueryBalanceResponse.class)
-                .map(formatter::format);
+        return accountTools.checkBalance(s.target());
     }
 }

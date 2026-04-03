@@ -8,7 +8,9 @@ public class QueryBalanceFormatter implements ResponseFormatter<QueryBalanceResp
 
     @Override
     public String format(QueryBalanceResponse response) {
+        if (response.error != null && !response.error.isBlank()) {
+            return response.error;
+        }
         return String.format("Saldo: $%.2f", response.balance);
     }
 }
-
