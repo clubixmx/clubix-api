@@ -8,6 +8,13 @@ spring:
   flyway:
     url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     user: sa
+  ai:
+    openai:
+      api-key: test-key   # dummy — OrchestratorService está mockeado, nunca se llama
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
 whatsapp:
   hook:

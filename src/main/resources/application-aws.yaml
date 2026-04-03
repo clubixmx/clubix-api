@@ -1,0 +1,25 @@
+spring:
+  config:
+    activate:
+      on-profile: aws
+  data:
+    redis:
+      ssl:
+        enabled: true
+      timeout: 3s
+      connect-timeout: 3s
+      cluster:
+        nodes:
+          - ${REDIS_HOST}:6379
+      lettuce:
+        shutdown-timeout: 0
+        cluster:
+          refresh:
+            adaptive: true
+            period: 30s
+
+  ai:
+    chat:
+      memory:
+        repository:
+          type: none

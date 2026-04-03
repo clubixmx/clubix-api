@@ -1,7 +1,6 @@
 package com.clubix.api.config;
 
-import com.clubix.api.command.Command;
-import com.clubix.api.command.QueryBalanceCommand;
+import com.clubix.api.incoming.OrchestratorService;
 import com.clubix.api.incoming.TextMessageProcessor;
 import com.jmeta.incoming.processor.MessageProcessor;
 import com.jmeta.outgoing.MarkAsReadSender;
@@ -20,19 +19,13 @@ public class ProcessorConfig {
     private final MessageSender messageSender;
     private final MarkAsReadSender markAsReadSender;
     private final TypingIndicatorSender typingIndicatorSender;
-    private final QueryBalanceCommand queryBalanceCommand;
+    private final OrchestratorService orchestratorService;
+
 
     @Bean
-    public Map<String, Command> commandRegistry() {
+    public Map<String, MessageProcessor> messageProcessorMap() {
         return Map.of(
-                "saldo", queryBalanceCommand
-        );
-    }
-
-    @Bean
-    public Map<String, MessageProcessor> messageProcessorMap(Map<String, Command> commandRegistry) {
-        return Map.of(
-                "text", new TextMessageProcessor(messageSender, markAsReadSender, typingIndicatorSender, commandRegistry)
+                "text", new TextMessageProcessor(messageSender, markAsReadSender, typingIndicatorSender,orchestratorService)
         );
     }
 }

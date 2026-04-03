@@ -16,7 +16,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -25,26 +24,26 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class TextMessageProcessorTest {
 
-    @Mock
-    private MessageSender messageSender;
-    @Mock
-    private MarkAsReadSender markAsReadSender;
-    @Mock
-    private TypingIndicatorSender typingIndicatorSender;
+    @Mock private MessageSender          messageSender;
+    @Mock private MarkAsReadSender       markAsReadSender;
+    @Mock private TypingIndicatorSender  typingIndicatorSender;
+    @Mock private OrchestratorService    orchestratorService;
 
     private TextMessageProcessor processor;
 
     @BeforeEach
     void setUp() {
-        processor = new TextMessageProcessor(messageSender, markAsReadSender, typingIndicatorSender, Map.of());
+        processor = new TextMessageProcessor(
+                messageSender, markAsReadSender, typingIndicatorSender, orchestratorService);
     }
 
     @Test
     void process_shouldCallAllSendersWithCorrectArguments() {
         // Given
-        String messageId = "msg-123";
-        String waId = "5491112345678";
-        String text = "Hello!";
+        String messageId           = "msg-123";
+        String waId                = "5491112345678";
+        String text                = "Hello!";
+        String orchestratorResponse = "Hola! ¿En qué puedo ayudarte?";
 
         IncomingTextMessage incoming = new IncomingTextMessage(
                 new Profile("John Doe", waId),
@@ -55,6 +54,7 @@ class TextMessageProcessorTest {
 
         when(markAsReadSender.markAsRead(messageId)).thenReturn(Mono.empty());
         when(typingIndicatorSender.send(messageId)).thenReturn(Mono.empty());
+        when(orchestratorService.handle(waId, text)).thenReturn(Mono.just(orchestratorResponse));
         when(messageSender.send(any(WhatsappMessage.class)))
                 .thenReturn(Mono.just(new MessageResponse(200, "OK")));
 
@@ -64,6 +64,7 @@ class TextMessageProcessorTest {
         // Then
         verify(markAsReadSender).markAsRead(messageId);
         verify(typingIndicatorSender).send(messageId);
+        verify(orchestratorService).handle(waId, text);
 
         ArgumentCaptor<WhatsappMessage> captor = ArgumentCaptor.forClass(WhatsappMessage.class);
         verify(messageSender).send(captor.capture());
@@ -71,7 +72,7 @@ class TextMessageProcessorTest {
         WhatsappMessage sent = captor.getValue();
         assertThat(sent.to()).isEqualTo(waId);
         assertThat(sent.type()).isEqualTo("text");
-        assertThat(sent.text().body()).isEqualTo("Echo: Hello!");
+        assertThat(sent.text().body()).isEqualTo(orchestratorResponse);
     }
 
     @Test
@@ -94,6 +95,7 @@ class TextMessageProcessorTest {
         // Then
         verify(markAsReadSender).markAsRead(messageId);
         verifyNoInteractions(typingIndicatorSender);
+        verifyNoInteractions(orchestratorService);
         verifyNoInteractions(messageSender);
     }
 
@@ -118,6 +120,7 @@ class TextMessageProcessorTest {
         // Then
         verify(markAsReadSender).markAsRead(messageId);
         verify(typingIndicatorSender).send(messageId);
+        verifyNoInteractions(orchestratorService);
         verifyNoInteractions(messageSender);
     }
 }

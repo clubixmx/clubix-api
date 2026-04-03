@@ -1,13 +1,19 @@
 package com.clubix.api.bdd.steps.business;
 
+import com.clubix.api.command.QueryBalanceCommand;
+import com.clubix.api.incoming.OrchestratorService;
 import com.clubix.repository.CustomerPostgreSQLRepository;
 import com.clubix.repository.entity.CustomerEntity;
 import com.clubix.repository.reactive.CustomerEntityRepository;
+import com.jmeta.incoming.message.IncomingTextMessage;
+import com.jmeta.incoming.message.Message;
+import com.jmeta.incoming.message.Profile;
 import com.jmeta.outgoing.MarkAsReadSender;
 import com.jmeta.outgoing.MessageSender;
 import com.jmeta.outgoing.TypingIndicatorSender;
 import com.jmeta.outgoing.message.MessageResponse;
 import com.jmeta.outgoing.message.WhatsappMessage;
+import com.usecase.shared.ValidationException;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -40,15 +46,34 @@ public class BusinessSteps {
     @Autowired private MessageSender                messageSender;
     @Autowired private MarkAsReadSender             markAsReadSender;
     @Autowired private TypingIndicatorSender        typingIndicatorSender;
+    @Autowired private OrchestratorService          orchestratorService;
+    @Autowired private QueryBalanceCommand          queryBalanceCommand;
 
     @Before
     public void prepareScenario() {
-        reset(customerRepository, messageSender, markAsReadSender, typingIndicatorSender);
+        reset(customerRepository, messageSender, markAsReadSender, typingIndicatorSender, orchestratorService);
         entityRepository.deleteAll().block();
 
         when(markAsReadSender.markAsRead(any())).thenReturn(Mono.empty());
         when(typingIndicatorSender.send(any())).thenReturn(Mono.empty());
         when(messageSender.send(any())).thenReturn(Mono.just(new MessageResponse(200, "OK")));
+
+        // Delega al QueryBalanceCommand real para mantener cobertura E2E.
+        // onErrorResume replica lo que el OrchestratorService real haría:
+        // convertir errores en mensajes amigables en lugar de propagarlos.
+        doAnswer(inv -> {
+            String conversationId = inv.getArgument(0);
+            String text           = inv.getArgument(1);
+            IncomingTextMessage msg = new IncomingTextMessage(
+                    new Profile("Test", conversationId),
+                    new Message(conversationId, "test-id"),
+                    "text",
+                    text
+            );
+            return queryBalanceCommand.process(msg)
+                    .onErrorResume(ValidationException.class, e -> Mono.just(e.getMessage()))
+                    .onErrorResume(e -> Mono.just("Service unavailable"));
+        }).when(orchestratorService).handle(any(), any());
     }
 
     // ── Givens ─────────────────────────────────────────────────────────────────

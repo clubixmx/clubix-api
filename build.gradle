@@ -20,9 +20,24 @@ repositories {
     mavenLocal()
 }
 
+ext {
+    set('springAiVersion', "1.1.2")
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+    }
+}
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
+
+    implementation 'org.springframework.ai:spring-ai-starter-model-openai'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
+
+    runtimeOnly "io.netty:netty-resolver-dns-native-macos:4.1.124.Final:osx-aarch_64"
 
     // Flyway — schema migrations (needs JDBC datasource to run DDL at startup)
     implementation 'org.flywaydb:flyway-core'

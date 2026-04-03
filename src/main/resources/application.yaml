@@ -1,9 +1,25 @@
 spring:
   application:
     name: clubix-api
+  ai:
+    openai:
+      api-key: ${OPEN_AI_API_KEY}
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      database: 0
 
 server:
   port: 8080
+
+whatsapp:
+  hook:
+    verify-token: cashback
+  outgoing:
+    phoneId: ${WHATSAPP_PHONE_ID}
+    metaUrl: "https://graph.facebook.com/v25.0/${whatsapp.outgoing.phoneId}/messages"
+    token: ${WHATSAPP_API_TOKEN}
 
 ---
 spring:
@@ -17,6 +33,10 @@ spring:
   flyway:
     url: jdbc:h2:mem:clubixdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     user: sa
+
+
+app:
+  scenario: customer_balance   # Cambia o deja vacío para no seed: app.scenario=
 
 ---
 spring:
