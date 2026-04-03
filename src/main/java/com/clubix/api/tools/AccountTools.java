@@ -1,6 +1,6 @@
 package com.clubix.api.tools;
 
-import com.clubix.api.command.formatter.ResponseFormatter;
+import com.clubix.api.tools.formatter.ResponseFormatter;
 import com.clubix.usecase.model.response.QueryBalanceResponse;
 import com.usecase.UseCase;
 import com.usecase.model.request.RequestFactory;

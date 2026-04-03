@@ -1,9 +1,9 @@
 package com.clubix.api.flows.account.balance;
 
-public record CheckBalanceState(String target, boolean awaitingConfirmation) {
+public record CheckBalanceState(String target) {
 
     public static CheckBalanceState empty() {
-        return new CheckBalanceState(null, false);
+        return new CheckBalanceState(null);
     }
 
     public boolean hasTarget() {
@@ -15,10 +15,6 @@ public record CheckBalanceState(String target, boolean awaitingConfirmation) {
     }
 
     public CheckBalanceState withTarget(String newTarget) {
-        return new CheckBalanceState(newTarget, this.awaitingConfirmation);
-    }
-
-    public CheckBalanceState awaitingConfirmation(boolean value) {
-        return new CheckBalanceState(this.target, value);
+        return new CheckBalanceState(newTarget);
     }
 }

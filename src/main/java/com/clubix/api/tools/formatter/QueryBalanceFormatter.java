@@ -1,4 +1,4 @@
-package com.clubix.api.command.formatter;
+package com.clubix.api.tools.formatter;
 
 import com.clubix.usecase.model.response.QueryBalanceResponse;
 import org.springframework.stereotype.Component;

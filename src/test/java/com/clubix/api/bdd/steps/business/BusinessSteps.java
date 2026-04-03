@@ -1,19 +1,15 @@
 package com.clubix.api.bdd.steps.business;
 
-import com.clubix.api.command.QueryBalanceCommand;
 import com.clubix.api.incoming.OrchestratorService;
+import com.clubix.api.tools.AccountTools;
 import com.clubix.repository.CustomerPostgreSQLRepository;
 import com.clubix.repository.entity.CustomerEntity;
 import com.clubix.repository.reactive.CustomerEntityRepository;
-import com.jmeta.incoming.message.IncomingTextMessage;
-import com.jmeta.incoming.message.Message;
-import com.jmeta.incoming.message.Profile;
 import com.jmeta.outgoing.MarkAsReadSender;
 import com.jmeta.outgoing.MessageSender;
 import com.jmeta.outgoing.TypingIndicatorSender;
 import com.jmeta.outgoing.message.MessageResponse;
 import com.jmeta.outgoing.message.WhatsappMessage;
-import com.usecase.shared.ValidationException;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -47,7 +43,7 @@ public class BusinessSteps {
     @Autowired private MarkAsReadSender             markAsReadSender;
     @Autowired private TypingIndicatorSender        typingIndicatorSender;
     @Autowired private OrchestratorService          orchestratorService;
-    @Autowired private QueryBalanceCommand          queryBalanceCommand;
+    @Autowired private AccountTools                 accountTools;
 
     @Before
     public void prepareScenario() {
@@ -58,21 +54,12 @@ public class BusinessSteps {
         when(typingIndicatorSender.send(any())).thenReturn(Mono.empty());
         when(messageSender.send(any())).thenReturn(Mono.just(new MessageResponse(200, "OK")));
 
-        // Delega al QueryBalanceCommand real para mantener cobertura E2E.
-        // onErrorResume replica lo que el OrchestratorService real haría:
-        // convertir errores en mensajes amigables en lugar de propagarlos.
+        // Delega al AccountTools real — misma cadena que usa CheckBalanceFlow.execute().
+        // El manejo de errores (not found, unavailable) ya está dentro de AccountTools.
         doAnswer(inv -> {
-            String conversationId = inv.getArgument(0);
-            String text           = inv.getArgument(1);
-            IncomingTextMessage msg = new IncomingTextMessage(
-                    new Profile("Test", conversationId),
-                    new Message(conversationId, "test-id"),
-                    "text",
-                    text
-            );
-            return queryBalanceCommand.process(msg)
-                    .onErrorResume(ValidationException.class, e -> Mono.just(e.getMessage()))
-                    .onErrorResume(e -> Mono.just("Service unavailable"));
+            String text       = inv.getArgument(1);
+            String customerId = text.split(" ")[1];
+            return accountTools.checkBalance(customerId);
         }).when(orchestratorService).handle(any(), any());
     }
 
@@ -141,7 +128,7 @@ public class BusinessSteps {
         Awaitility.await().atMost(Duration.ofSeconds(3)).untilAsserted(() -> {
             ArgumentCaptor<WhatsappMessage> captor = ArgumentCaptor.forClass(WhatsappMessage.class);
             verify(messageSender).send(captor.capture());
-            assertThat(captor.getValue().text().body()).containsIgnoringCase("unavailable");
+            assertThat(captor.getValue().text().body()).containsIgnoringCase("no se pudo");
         });
     }
 }

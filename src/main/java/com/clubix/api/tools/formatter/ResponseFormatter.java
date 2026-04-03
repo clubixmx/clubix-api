@@ -1,4 +1,4 @@
-package com.clubix.api.command.formatter;
+package com.clubix.api.tools.formatter;
 
 import com.usecase.model.response.Response;
 
